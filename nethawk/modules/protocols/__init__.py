@@ -1,0 +1,1 @@
+from nethawk.extensions.modules.protocols import Protocol as Module

@@ -1,0 +1,72 @@
+# Configuration file for NetMap
+api_keys:
+  GEMINI_API_KEY: ''
+
+mongodb:
+  port: 27017
+  database: 'nethawk'
+
+# Nmap Configuration
+nmap:
+  ports:
+    tcp: "1-65535"
+    udp: [53,67,68,69,123,161,162,500,514,520,1645,1646,1812,1813,1900]
+  scripts:
+    http: "http-vuln*,http-headers,http-enum,http-useragent-tester,http-favicon,http-methods"
+    
+  profiles:
+    initial:
+      arguments: "-sS --min-rate 10000 --max-retries 1 --open --reason"
+      ports: null  # Use default
+      scripts: null
+
+    quick:
+      arguments: "-sS -T4 -F"
+      ports: False
+
+    balanced:
+      arguments: "-sS -sV -sC -T3 --min-rate 3000"
+
+    aggressive:
+      arguments: "-sS -sV -A -T4 --min-rate 10000"
+
+    full:
+      arguments: "-sS -sC -sV -T4 --traceroute -min-rate 10000"
+      scripts: "banner"
+
+http:
+  dictionary:
+    wordlist: "/usr/share/seclists/Discovery/Web-Content/common.txt"
+    match_code: [200, 301, 302, 307, 401]
+    extensions: ["php", "cgi", "txt", "log", "json", "bak", "old", "db", "sql", "sqlite", "zip", "tar"]
+    recursion: False
+    recursion-depth: 3
+    threads: 500
+    timeout: 5.0
+    max-tries: 3
+
+  cve:
+    provider: [
+      'google', 
+      'metasploit', 
+      'searchsploit'
+    ]
+    script_ext: ["py", "sh", "rb", "pl", "java"]
+    link_limit: 5
+
+  vhost:
+    wordlist: "/usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt"
+    recursion: false
+    recursion-depth: 3
+    concurrency: 40
+    timeout: 5.0
+    max-tries: 3
+
+  # Http Listeners (this module will run on service scan if module are not provided)
+  listeners:
+    - tech
+    - cve
+    - robots
+    - spider
+    - dir
+    - vhost

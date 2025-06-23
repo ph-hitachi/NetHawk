@@ -1,0 +1,79 @@
+# API Keys
+api_keys:
+  GEMINI_API_KEY: ''
+
+# Database
+mongodb:
+  port: 27017
+  path: '/var/lib/mongodb'
+  database: 'nethawk'
+
+# Nmap Configuration
+nmap:
+  ports:
+    tcp: "1-65535"
+    udp: [161]
+    # udp: [53,67,68,69,123,161,162,500,514,520,1645,1646,1812,1813,1900]
+    
+  profiles:
+    initial:
+      arguments: "-sS --min-rate 10000 --max-retries 1 --reason "
+      scripts: 'http-title' # added: To identify if there's default vhost for single service scan.
+
+    quick:
+      arguments: "-sS -T4 -F"
+      ports: False
+
+    balanced:
+      arguments: "-sS -sV -sC -T3 --min-rate 3000"
+
+    aggressive:
+      arguments: "-sS -sV -T4 --min-rate 10000"
+
+    full:
+      arguments: "-sS -A -T4"
+
+# HTTP Configuration
+http:
+  # Listeners (these modules will run on service scan if module are not provided or specified)
+  listeners:
+    - tech
+    - cve
+    - robots
+    - spider
+    - dir
+    - vhost
+
+  dictionary:
+    wordlist: "/usr/share/seclists/Discovery/Web-Content/common.txt"
+    match_code: [200, 301, 302, 307, 401]
+    extensions: ["php", "cgi", "txt", "log", "json", "bak", "old", "db", "sql", "sqlite", "zip", "tar"]
+    recursion: False
+    recursion-depth: 3
+    threads: 250
+    timeout: 5.0
+    max-tries: 3
+
+  cve:
+    categories: [
+      # 'Servers', 
+      'Web Application'
+    ]
+    provider: [
+      'google', 
+      'metasploit', 
+      'searchsploit'
+    ]
+    limit: 3
+
+  vhost:
+    wordlist: "/usr/share/seclists/Discovery/DNS/services-names.txt"
+    match_code: [200, 301, 302, 307, 401]
+    recursion: false
+    recursion-depth: 3
+    threads: 250
+    timeout: 5.0
+    max-tries: 3
+  
+  nmap_scripts:
+    scripts: "http-vuln*,http-headers,http-enum,http-useragent-tester,http-favicon,http-methods"

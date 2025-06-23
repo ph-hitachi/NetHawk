@@ -1,0 +1,47 @@
+[project.scripts]
+nethawk = "nethawk.cli.nethawk:main"
+NetHawk = "nethawk.cli.nethawk:main"
+nhawk = "nethawk.cli.nethawk:main"
+
+[project]
+name = "nethawk"
+version = "1.0.0"
+description = "Network Scanner and Enumeration Tool"
+authors = [
+    {name = "Justin Lee", email = "jessd@example.com"}
+]
+license = "MIT"
+dependencies = [
+    "rich",
+    "pymongo",
+    "mongoengine",
+    "scapy",
+    "twisted[tls]",
+    "scrapy @ git+https://github.com/scrapy/scrapy.git",
+    "wappalyzer",
+    "googlesearch-python",
+    "google-generativeai",
+    "beautifulsoup4",
+    "xmltodict",
+    "aiohttp[speedups]",
+    "python-box",
+    "pyyaml",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-custom-report",
+]
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "nethawk",
+    "nethawk.*",
+    "resources",
+    "resources.*"
+]
+
+[tool.setuptools.package-data]
+"resources.config" = ["*.yaml"]
+"resources.profiles" = ["*.yaml"]

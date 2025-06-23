@@ -1,0 +1,200 @@
+from datetime import datetime
+from mongoengine.base import BaseDocument
+from mongoengine import (
+    Document,
+    EmbeddedDocument,
+    EmbeddedDocumentField,
+    EmbeddedDocumentListField,
+    StringField,
+    IntField,
+    ListField,
+    EmailField,
+    DateTimeField,
+    connect
+)
+
+def merge_documents(instance: BaseDocument, updates: dict) -> BaseDocument:
+    """
+    Recursively merge update values into a MongoEngine Document or EmbeddedDocument.
+    
+    - Scalars are overwritten.
+    - Lists are merged (deduplicated).
+    - Embedded documents are merged recursively.
+    
+    Args:
+        instance: The existing MongoEngine document or embedded document.
+        updates: A dictionary containing updates.
+
+    Returns:
+        The merged MongoEngine object.
+    """
+    if not instance:
+        raise ValueError("Instance must not be None")
+
+    for key, value in updates.items():
+        field = instance._fields.get(key) # type: ignore
+
+        if not field:
+            continue  # Skip unknown fields
+
+        current_value = getattr(instance, key, None)
+
+        # If it's an embedded document
+        if isinstance(field, EmbeddedDocumentField):
+            if current_value:
+                merged = merge_documents(current_value, value)
+                setattr(instance, key, merged)
+            else:
+                setattr(instance, key, field.document_type(**value))
+
+        # If it's a list of embedded documents
+        elif isinstance(field, EmbeddedDocumentListField):
+            existing = current_value or []
+            existing_dicts = [e.to_mongo().to_dict() for e in existing]
+            new_dicts = [v.to_mongo().to_dict() if hasattr(v, 'to_mongo') else v for v in value]
+
+            # Avoid exact duplicates
+            combined = existing_dicts + [v for v in new_dicts if v not in existing_dicts]
+            result_objs = [field.field.document_type(**d) for d in combined] # type: ignore
+            setattr(instance, key, result_objs)
+
+        # If it's a regular list
+        elif isinstance(value, list):
+            current_list = current_value or []
+            merged_list = list(set(current_list + value))
+            setattr(instance, key, merged_list)
+
+        # Scalar field: just overwrite
+        else:
+            setattr(instance, key, value)
+
+    return instance
+
+# Link metadata (like path, status, size)
+class PathEntry(EmbeddedDocument):
+    path = StringField(required=True)
+    status = IntField()
+    size = IntField()
+    words = IntField()
+    line = IntField()
+
+class VhostEntry(EmbeddedDocument):
+    url = StringField(required=True)
+    status = IntField()
+    size = IntField()
+    words = IntField()
+    line = IntField()
+
+# Technologies found on services like HTTP
+class TechnologyEntry(EmbeddedDocument):
+    name = StringField(required=True)
+    version = StringField(default="")
+    categories = ListField(StringField())
+    confidence = StringField()
+    group = StringField()
+    detected_by = StringField()
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'version': self.version,
+            'category': self.categories,
+            'confidence': self.confidence,
+            'group': self.group,
+            'detected_by': self.detected_by
+        }
+
+# Form fields from HTML forms
+class FormFieldEntry(EmbeddedDocument):
+    action = StringField(required=True)         # Was "url" before
+    method = StringField(required=True)         # HTTP method like GET/POST
+    fields = ListField(StringField())           # Form input field names
+    can_found_at = ListField(StringField())     # Pages where the form was found
+
+
+# Robots.txt entries
+class RobotsTxtEntry(EmbeddedDocument):
+    path = StringField(required=True)
+    type = StringField(choices=["allowed", "disallowed", "sitemap"], required=True)
+
+# Collected links and metadata related to a web service
+class ServiceLinks(EmbeddedDocument):
+    # urls = EmbeddedDocumentListField(PathEntry)
+    urls = ListField(StringField())
+    emails = ListField(EmailField())
+    images = ListField(StringField())
+    videos = ListField(StringField())
+    audio = ListField(StringField())
+    comments = ListField(StringField())
+    pages = ListField(StringField())
+    parameters = ListField(StringField())
+    subdomain_links = ListField(StringField())
+    static_files = ListField(StringField())
+    javascript_files = ListField(StringField())
+    external_files = ListField(StringField())
+    other_links = ListField(StringField())
+    form_fields = EmbeddedDocumentListField(FormFieldEntry)
+    robots_txt = EmbeddedDocumentListField(RobotsTxtEntry)
+    directories = EmbeddedDocumentListField(PathEntry)
+
+    def update(self, updates: dict):
+        """
+        Merge updates into this ServiceLinks object.
+        Supports either a dict or another ServiceLinks instance.
+        """
+        if isinstance(updates, ServiceLinks):
+            updates = updates.to_mongo().to_dict()
+        return merge_documents(self, updates)
+    
+# Information about each open service
+class ServiceInfo(EmbeddedDocument):
+    protocol = StringField(required=True, default="tcp")
+    port = IntField(required=True)
+    state = StringField(default="open")
+    reason = StringField()
+    name = StringField()
+    product = StringField()
+    version = StringField()
+    extrainfo = StringField()
+    conf = StringField()
+    cpe = ListField(StringField())
+    technologies = EmbeddedDocumentListField(TechnologyEntry)
+    links = EmbeddedDocumentField(ServiceLinks)
+
+    def to_dict(self):
+        return {
+            'protocol': self.protocol,
+            'port': self.port,
+            'state': self.state,
+            'reason': self.reason,
+            'name': self.name,
+            'product': self.product,
+            'version': self.version,
+            'extrainfo': self.extrainfo,
+            'conf': self.conf,
+            'cpe': self.cpe,
+            'technologies': self.technologies,
+            'links': self.links,
+        }
+
+
+# The root model per target (identified by IP)
+class TargetInfo(Document):
+    hostname = StringField(required=True, unique=True)
+    ip_address = StringField(required=True, unique=True)
+    operating_system = StringField()
+    virtual_hosts = EmbeddedDocumentListField(VhostEntry, default=[])
+    services = EmbeddedDocumentListField(ServiceInfo)
+
+    created_at = DateTimeField(default=datetime.utcnow)
+    updated_at = DateTimeField(default=datetime.utcnow)
+
+    meta = {
+        'collection': 'targets',
+        'indexes': ['ip_address'],
+        'ordering': ['-updated_at']
+    }
+    
+    def commit(self, *args, **kwargs):
+        self.updated_at = datetime.utcnow()
+        return super().save(*args, **kwargs)

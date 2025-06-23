@@ -1,0 +1,271 @@
+{
+    "emails": [
+        "wvs@acunetix.com"
+    ],
+    "links": [
+        "http://testphp.vulnweb.com/cart.php",
+        "http://testphp.vulnweb.com/listproducts.php?artist=3",
+        "http://testphp.vulnweb.com/hpp/params.php?p=valid&pp=12",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/BuyProduct-1/",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/6.jpg&size=160",
+        "http://testphp.vulnweb.com/privacy.php",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/images/1.jpg",
+        "http://testphp.vulnweb.com/images/remark.gif",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/3.jpg&size=160",
+        "http://testphp.vulnweb.com/disclaimer.php",
+        "http://testphp.vulnweb.com/product.php?pic=5",
+        "http://testphp.vulnweb.com/search.php?test=query",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/Details/color-printer/3/",
+        "http://testphp.vulnweb.com/artists.php?artist=1",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/2.jpg&size=160",
+        "http://testphp.vulnweb.com/login.php",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/5.jpg&size=160",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/3.jpg",
+        "http://testphp.vulnweb.com/listproducts.php?artist=1",
+        "http://testphp.vulnweb.com/hpp/?pp=12",
+        "http://testphp.vulnweb.com/listproducts.php?cat=2",
+        "http://testphp.vulnweb.com/hpp/",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/5.jpg",
+        "http://testphp.vulnweb.com/guestbook.php",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/4.jpg",
+        "http://testphp.vulnweb.com/product.php?pic=6",
+        "http://testphp.vulnweb.com/categories.php",
+        "http://testphp.vulnweb.com/product.php?pic=4",
+        "http://testphp.vulnweb.com/listproducts.php?cat=4",
+        "http://testphp.vulnweb.com/product.php?pic=7",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/images/2.jpg",
+        "http://testphp.vulnweb.com/product.php?pic=3",
+        "http://testphp.vulnweb.com/AJAX/styles.css",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/Details/network-attached-storage-dlink/1/",
+        "http://testphp.vulnweb.com/artists.php?artist=2",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/4.jpg&size=160",
+        "http://testphp.vulnweb.com/index.php",
+        "http://testphp.vulnweb.com/style.css",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/RateProduct-2.html",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/2.jpg",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/RateProduct-1.html",
+        "http://testphp.vulnweb.com/userinfo.php",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/RateProduct-3.html",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/6.jpg",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/Details/web-camera-a4tech/2/",
+        "http://testphp.vulnweb.com/secured/style.css",
+        "http://testphp.vulnweb.com/images/logo.gif",
+        "http://testphp.vulnweb.com/listproducts.php?artist=2",
+        "http://testphp.vulnweb.com/product.php?pic=2",
+        "http://testphp.vulnweb.com/product.php?pic=1",
+        "http://testphp.vulnweb.com/artists.php",
+        "http://testphp.vulnweb.com/signup.php",
+        "http://testphp.vulnweb.com/listproducts.php?cat=3",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/images/3.jpg",
+        "http://testphp.vulnweb.com/artists.php?artist=3",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/BuyProduct-2/",
+        "http://testphp.vulnweb.com/secured/newuser.php",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/7.jpg",
+        "http://testphp.vulnweb.com/AJAX/index.php",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/7.jpg&size=160",
+        "http://testphp.vulnweb.com/listproducts.php?cat=1",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/BuyProduct-3/",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/1.jpg&size=160",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/1.jpg"
+    ],
+    "static_files": [
+        "http://testphp.vulnweb.com/AJAX/styles.css",
+        "http://testphp.vulnweb.com/style.css",
+        "http://testphp.vulnweb.com/secured/style.css"
+    ],
+    "js_files": [],
+    "external_files": [],
+    "form_fields": [
+        {
+            "action": "http://testphp.vulnweb.com/search.php?test=query",
+            "can_found_at": [
+                "http://testphp.vulnweb.com",
+                "http://testphp.vulnweb.com/cart.php",
+                "http://testphp.vulnweb.com/login.php",
+                "http://testphp.vulnweb.com/categories.php",
+                "http://testphp.vulnweb.com/search.php?test=query",
+                "http://testphp.vulnweb.com/guestbook.php",
+                "http://testphp.vulnweb.com/disclaimer.php",
+                "http://testphp.vulnweb.com/index.php",
+                "http://testphp.vulnweb.com/artists.php",
+                "http://testphp.vulnweb.com/signup.php",
+                "http://testphp.vulnweb.com/listproducts.php?cat=1",
+                "http://testphp.vulnweb.com/listproducts.php?cat=3",
+                "http://testphp.vulnweb.com/listproducts.php?cat=2",
+                "http://testphp.vulnweb.com/artists.php?artist=3",
+                "http://testphp.vulnweb.com/listproducts.php?cat=4",
+                "http://testphp.vulnweb.com/artists.php?artist=1",
+                "http://testphp.vulnweb.com/artists.php?artist=2",
+                "http://testphp.vulnweb.com/product.php?pic=7",
+                "http://testphp.vulnweb.com/product.php?pic=1",
+                "http://testphp.vulnweb.com/product.php?pic=3",
+                "http://testphp.vulnweb.com/product.php?pic=2",
+                "http://testphp.vulnweb.com/product.php?pic=4",
+                "http://testphp.vulnweb.com/listproducts.php?artist=3",
+                "http://testphp.vulnweb.com/listproducts.php?artist=2",
+                "http://testphp.vulnweb.com/listproducts.php?artist=1",
+                "http://testphp.vulnweb.com/product.php?pic=6",
+                "http://testphp.vulnweb.com/product.php?pic=5"
+            ],
+            "method": "POST",
+            "fields": [
+                "goButton",
+                "searchFor"
+            ]
+        },
+        {
+            "action": "http://testphp.vulnweb.com/userinfo.php",
+            "can_found_at": [
+                "http://testphp.vulnweb.com/login.php"
+            ],
+            "method": "POST",
+            "fields": [
+                "uname",
+                "pass"
+            ]
+        },
+        {
+            "action": "http://testphp.vulnweb.com/guestbook.php",
+            "can_found_at": [
+                "http://testphp.vulnweb.com/guestbook.php"
+            ],
+            "method": "POST",
+            "fields": [
+                "submit",
+                "name",
+                "text"
+            ]
+        },
+        {
+            "action": "http://testphp.vulnweb.com/secured/newuser.php",
+            "can_found_at": [
+                "http://testphp.vulnweb.com/signup.php"
+            ],
+            "method": "POST",
+            "fields": [
+                "upass2",
+                "upass",
+                "signup",
+                "urname",
+                "uemail",
+                "uaddress",
+                "ucc",
+                "uuname",
+                "uphone"
+            ]
+        },
+        {
+            "action": "http://testphp.vulnweb.com/hpp/params.php?p=valid&pp=12",
+            "can_found_at": [
+                "http://testphp.vulnweb.com/hpp/?pp=12"
+            ],
+            "method": "GET",
+            "fields": [
+                "aaaa/"
+            ]
+        },
+        {
+            "action": "http://testphp.vulnweb.com/cart.php",
+            "can_found_at": [
+                "http://testphp.vulnweb.com/product.php?pic=7",
+                "http://testphp.vulnweb.com/product.php?pic=1",
+                "http://testphp.vulnweb.com/product.php?pic=3",
+                "http://testphp.vulnweb.com/product.php?pic=2",
+                "http://testphp.vulnweb.com/product.php?pic=4",
+                "http://testphp.vulnweb.com/product.php?pic=6",
+                "http://testphp.vulnweb.com/product.php?pic=5"
+            ],
+            "method": "POST",
+            "fields": [
+                "addcart",
+                "price"
+            ]
+        }
+    ],
+    "images": [
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/2.jpg&size=160",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/5.jpg&size=160",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/images/3.jpg",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/4.jpg&size=160",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/7.jpg&size=160",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/6.jpg&size=160",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/1.jpg&size=160",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/images/1.jpg",
+        "http://testphp.vulnweb.com/images/remark.gif",
+        "http://testphp.vulnweb.com/showimage.php?file=./pictures/3.jpg&size=160",
+        "http://testphp.vulnweb.com/images/logo.gif",
+        "http://testphp.vulnweb.com/Mod_Rewrite_Shop/images/2.jpg"
+    ],
+    "videos": [],
+    "audio": [],
+    "comments": [
+        "<!-- InstanceBeginEditable name=\"content_rgn\" -->",
+        "<!-- InstanceEnd -->",
+        "<!-- here goes headers headers -->",
+        "<!-- InstanceBeginEditable name=\"document_title_rgn\" -->",
+        "<!--end content -->",
+        "<!-- InstanceBegin template=\"/Templates/main_dynamic_template.dwt.php\" codeOutsideHTMLIsLocked=\"false\" -->",
+        "<!--end navbar -->",
+        "<!-- end masthead -->",
+        "<!-- begin content -->",
+        "<!-- InstanceBeginEditable name=\"headers_rgn\" -->",
+        "<!-- InstanceEndEditable -->"
+    ],
+    "pages": [
+        "",
+        "/Mod_Rewrite_Shop/RateProduct-2.html",
+        "/disclaimer.php",
+        "/login.php",
+        "/categories.php",
+        "/Mod_Rewrite_Shop/Details/color-printer/3/",
+        "/artists.php",
+        "/Mod_Rewrite_Shop/Details/network-attached-storage-dlink/1/",
+        "/AJAX/index.php",
+        "/guestbook.php",
+        "/hpp/",
+        "/Mod_Rewrite_Shop/RateProduct-3.html",
+        "/Mod_Rewrite_Shop/BuyProduct-1/",
+        "/Mod_Rewrite_Shop/BuyProduct-3/",
+        "/Mod_Rewrite_Shop/RateProduct-1.html",
+        "/cart.php",
+        "/Mod_Rewrite_Shop/BuyProduct-2/",
+        "/Mod_Rewrite_Shop/Details/web-camera-a4tech/2/",
+        "/secured/newuser.php",
+        "/signup.php",
+        "/Mod_Rewrite_Shop/",
+        "/index.php"
+    ],
+    "pages_with_parameters": [
+        "http://testphp.vulnweb.com/listproducts.php?artist=3",
+        "http://testphp.vulnweb.com/hpp/params.php?p=valid&pp=12",
+        "http://testphp.vulnweb.com/product.php?pic=5",
+        "http://testphp.vulnweb.com/search.php?test=query",
+        "http://testphp.vulnweb.com/artists.php?artist=1",
+        "http://testphp.vulnweb.com/listproducts.php?artist=1",
+        "http://testphp.vulnweb.com/hpp/?pp=12",
+        "http://testphp.vulnweb.com/listproducts.php?cat=2",
+        "http://testphp.vulnweb.com/product.php?pic=6",
+        "http://testphp.vulnweb.com/product.php?pic=4",
+        "http://testphp.vulnweb.com/listproducts.php?cat=4",
+        "http://testphp.vulnweb.com/product.php?pic=7",
+        "http://testphp.vulnweb.com/product.php?pic=3",
+        "http://testphp.vulnweb.com/artists.php?artist=2",
+        "http://testphp.vulnweb.com/listproducts.php?artist=2",
+        "http://testphp.vulnweb.com/product.php?pic=2",
+        "http://testphp.vulnweb.com/product.php?pic=1",
+        "http://testphp.vulnweb.com/artists.php?artist=3",
+        "http://testphp.vulnweb.com/listproducts.php?cat=3",
+        "http://testphp.vulnweb.com/listproducts.php?cat=1"
+    ],
+    "subdomain_links": [],
+    "other_links": [
+        "http://blog.mindedsecurity.com/2009/05/client-side-http-parameter-pollution.html",
+        "http://www.acunetix.com",
+        "https://www.acunetix.com/vulnerability-scanner/",
+        "https://www.acunetix.com/blog/articles/prevent-sql-injection-vulnerabilities-in-php-applications/",
+        "https://www.acunetix.com/",
+        "http://www.eclectasy.com/Fractal-Explorer/index.html",
+        "https://www.acunetix.com/vulnerability-scanner/php-security-scanner/"
+    ]
+}

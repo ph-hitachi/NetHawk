@@ -1,0 +1,54 @@
+usage:
+  - "nethawk <target> [flags]"
+  - "nethawk <service> <target> [flags]"
+
+positional:
+  - name: "<service>"
+    required: false
+    description: "Optional protocol service (e.g., http, smb, ftp, ssh)"
+  - name: "<target>"
+    required: true
+    description: "Required target IP address or domain name"
+
+services:
+  - name: "http"
+    description: "Web-focused recon (tech fingerprinting, CVE checks, content discovery)"
+  - name: "ssh"
+    description: "SSH checks (auth brute-force, login validation)"
+  - name: "smb"
+    description: "SMB recon (share enumeration, user hunting)"
+  - name: "ftp"
+    description: "FTP recon (anonymous access, login verification)"
+
+general_flags:
+  - flags: ["-p", "--ports"]
+    description: "Define custom ports to scan (e.g., 21,22,80)"
+  - flags: ["-m", "--module"]
+    description: "Run specific recon modules (comma-separated)"
+  - flags: ["-c", "--config"]
+    description: "Load a custom YAML config file"
+  - flags: ["    --publish"]
+    description: "Publish or Update current existing config"
+  - flags: ["    --nmap"]
+    description: "Run a raw Nmap scan without triggering recon modules"
+  - flags: ["-h", "--help"]
+    description: "Display this help message and exit (e.g., -h, nethawk http -h)"
+
+modules:
+  - flags: ["--list-modules"]
+    description: "List all available modules for a given service (e.g., http --list-modules)"
+  - flags: ["--show-module"]
+    description: "List all available commands (options) for a given module (e.g., http --show-module=dir)"
+
+debugging:
+  - flags: ["-v", "--verbose"]
+    description: "Enable verbose logging for richer output"
+  - flags: ["    --debug"]
+    description: "Print internal debug data (for troubleshooting, dev use)"
+
+examples:
+  - "nethawk 10.0.0.1 --verbose"
+  - "nethawk nmap 10.0.0.1 -p1-1000"
+  - "nethawk http 10.0.0.1 -p80"
+  - "nethawk http 10.0.0.1 -p80 [-M|--module] robots,cve,spider,dir"
+  - "nethawk http 10.0.0.1 -p80 [-M|--module] dir -e .php,.bak,.json,.txt,.sql -mc 200,301,403,500"

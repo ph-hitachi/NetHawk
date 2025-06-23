@@ -1,0 +1,1 @@
+from nethawk.extensions.modules.discovery import Discovery as Module

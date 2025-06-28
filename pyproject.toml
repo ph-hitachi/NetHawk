@@ -1,14 +1,12 @@
 [project.scripts]
 nethawk = "nethawk.cli.nethawk:main"
-NetHawk = "nethawk.cli.nethawk:main"
-nhawk = "nethawk.cli.nethawk:main"
 
 [project]
 name = "nethawk"
 version = "1.0.0"
-description = "Network Scanner and Enumeration Tool"
+description = "Network Scanner and Enumeration Framework (Modular)"
 authors = [
-    {name = "Justin Lee", email = "jessd@example.com"}
+    {name = "Justin Lee", email = "ph.hitachi@gmail.com"}
 ]
 license = "MIT"
 dependencies = [
@@ -43,5 +41,6 @@ include = [
 ]
 
 [tool.setuptools.package-data]
+"resources" = ["*.yaml"]
 "resources.config" = ["*.yaml"]
 "resources.profiles" = ["*.yaml"]

@@ -41,14 +41,14 @@ class Vhost(Handler):
         """
         Generate subdomain-based hostnames for vhost fuzzing.
         """
-        wordlist = self.config.get("wordlist")
+        logging.debug(f'wordlist: {self.config.get("wordlist")}')
         
-        if not wordlist:
+        wordlist = Path(str(self.config.get("wordlist")))
+
+        if not wordlist.exists():
             raise ValueError(f'Wordlist not found: \'{wordlist}\'')
         
-        
         try:
-            path = Path(wordlist)
 
             hostname = self.domain
             entries = []
@@ -59,12 +59,13 @@ class Vhost(Handler):
 
             for entry in test_entries:
                 entries.append(f"{entry}.{hostname}")
-                with path.open() as f:
+                with wordlist.open() as f:
                     for line in f:
                         line = self.sanitize_subdomain(line)
                         if not line or line.startswith("#"):
                             continue
                         entries.append(f"{line}.{hostname}")
+
         except IsADirectoryError:
             raise IsADirectoryError(f"Provided wordlist path is a directory, not a file: {wordlist}")
         

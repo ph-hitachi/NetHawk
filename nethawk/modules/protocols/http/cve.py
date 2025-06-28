@@ -6,11 +6,12 @@ from rich.console import Console
 from rich.table import Table
 
 from nethawk.cli import banner
+from nethawk.core.context import Request
 from nethawk.core.resolver import Resolver
 from nethawk.extensions.network.service_scanner import ServiceScanner
 from nethawk.extensions.detectors.tech import Detector
 from nethawk.extensions.exploit.cve_suggester import CVESuggester
-from nethawk.core.models import TechnologyEntry
+from nethawk.core.models import HostInfo, TechnologyEntry
 from nethawk.modules.protocols import Module
 
 class CVESearch(Module):
@@ -30,64 +31,51 @@ class CVESearch(Module):
 
         return parser
     
-    async def run(self, target, port, args):
-        s_scanner = ServiceScanner()
+    async def run(self, target, port):
+        request = Request.from_target(target, port)
         detector = Detector()
-        suggester = CVESuggester(config=vars(args))
+        suggester = CVESuggester(config=vars(self.args))
 
-        url = None
-        resolver = None
-
-        if target:
-            resolver = Resolver(target, port)
+        if request.resolver.error:
+            return logging.error(request.resolver.error)
         
         try:
-            if resolver and resolver.get_error():
-                return
+            target_info = request.database
+            host_info = HostInfo.get_or_create(domain=request.resolver.hostname, target=target_info)
+
+            # tech_list = []
+            # if host_info.technologies:
+            tech_list = TechnologyEntry.objects(host=host_info).first()
+            logging.debug(f'Technology list: {tech_list}')
+
+            # Auto-detect technologies
+            if not tech_list:
+                for group in detector.get_technologies(request.resolver.resolved_url).values():  # type: ignore
+                    for tech_data in group:
+                        TechnologyEntry.get_or_create(
+                            name=tech_data['name'],
+                            version=tech_data['version'],
+                            host=host_info,
+                            categories=tech_data.get('categories', []),
+                            confidence=tech_data.get('confidence', ''),
+                            group=tech_data.get('group', ''),
+                            detected_by=tech_data.get('detected_by', '')
+                        )
+
+            detected_tech=[tech.to_dict() for tech in TechnologyEntry.objects(host=host_info)] # type: ignore
+            filtered_results = suggester.filtered_technologies(detected_tech)
             
-            if resolver and target:
-                url = resolver.get_url()
+            logging.debug(f"Filtered Technologies: {filtered_results}")
+            
+            if not filtered_results:
+                logging.info(f"No Technologies related to: {', '.join(self.args.categories)}")
 
-                db, service = s_scanner.scan(
-                    target=resolver.get_ip(), 
-                    port=str(resolver.get_port())
-                )
-
-                if not db or not service:
-                    return
-                
-                tech_list = []
-                domain = db.get_vhost(resolver.get_hostname())
-
-                if db.hostname and resolver.get_hostname():
-                    tech_list = domain.technologies
-
-                # Auto-detect technologies
-                if not tech_list:
-                    for group in detector.get_technologies(url).values():  # type: ignore
-                        for tech_data in group:
-                            name, version = tech_data['name'], tech_data['version']
-                            if not any(t.name == name and t.version == version for t in domain.technologies):  # type: ignore
-                                if db.hostname and resolver.get_hostname():
-                                    domain.technologies.append(TechnologyEntry(**tech_data))
-
-
-                    db.commit()
-
-                detected_tech=[tech.to_dict() for tech in domain.technologies] # type: ignore
-                filtered_results = suggester.filtered_technologies(detected_tech)
-                
-                logging.debug(f"Detected Technologies: {filtered_results}")
-
-                for tech in filtered_results:
-                    suggester.search(tech.get('name'), args.provider)
-                
-                print(db.to_json(indent=4))
-                return
+            for tech in filtered_results:
+                suggester.search(tech.get('name'), self.args.provider)
             
             # If search is manually provided
-            if args.search:
-                suggester.search(args.search, args.provider)
+            if self.args.search:
+                suggester.search(self.args.search, self.args.provider)
 
         except Exception as e:
             logging.error(f"Unexpected Error: {e}")

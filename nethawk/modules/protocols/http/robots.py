@@ -11,8 +11,9 @@ from rich.console import Console
 from rich.table import Table
 
 from nethawk.cli import banner
+from nethawk.core.context import Request
 from nethawk.core.resolver import Resolver
-from nethawk.core.models import ServiceLinks, RobotsTxtEntry
+from nethawk.core.models import HostInfo, ServiceLinks, RobotsTxtEntry
 from nethawk.modules.protocols import Module
 from nethawk.extensions.network.service_scanner import ServiceScanner
 
@@ -137,8 +138,9 @@ class RobotsAnalyzer(Module):
             table.add_row(f"    {path}", status_txt)
 
             entry_type = title.lower()
+
             if entry_type in ("allowed", "disallowed", "sitemap"):
-                self.robots_entries.append(RobotsTxtEntry(path=path, type=entry_type))
+                self.robots_entries.append((path, entry_type, status))
         
         console = Console()
 
@@ -147,22 +149,16 @@ class RobotsAnalyzer(Module):
         console.print()
 
 
-    async def run(self, target, port, args):
-        resolver = Resolver(target, port)
-        scanner = ServiceScanner()
-        url = resolver.get_url()
+    async def run(self, target, port):
+        request = Request.from_target(target, port)
+        resolver = request.resolver
+        target_info = request.database
+        url = resolver.resolved_url
 
+        if request.resolver.error:
+            return logging.error(request.resolver.error)
+        
         try:
-            if resolver.get_error():
-                return
-            
-            db, service = scanner.scan(
-                target=resolver.get_ip(), 
-                port=str(resolver.get_port())
-            )
-
-            if not db or not service:
-                return
 
             robots_txt = self.fetch_robots_txt(url)
             if not robots_txt:
@@ -175,17 +171,19 @@ class RobotsAnalyzer(Module):
                 await self.print_group("Disallowed", url, disallowed, session)
                 await self.print_group("Sitemap", url, sitemaps, session)
 
-            domain = db.get_vhost(resolver.get_hostname())
-
-            if db and self.robots_entries and domain:
-                data = ServiceLinks(robots_txt=self.robots_entries)
-
-                if domain.links:
-                    domain.links = service.links.update(data)
-                else:
-                    domain.links = data
-                
-                db.commit()
+            host_info = HostInfo.get_or_create(
+                domain=resolver.hostname, target=target_info, port=port
+            )
+            
+            service_links = ServiceLinks.get_or_create(host=host_info)
+            
+            for robots in self.robots_entries:
+                path, entry_type, status = robots
+                RobotsTxtEntry.get_or_create(
+                    path=path, type=entry_type, status=str(status), service_links=service_links
+                )
+            
+            logging.debug(service_links.to_dict())
 
         except Exception as e:
             logging.exception(e)

@@ -18,8 +18,8 @@ class Base(ABC):
     def __init__(self, target:str | None = None, port:str | int | None = None, context: Dict[str, Any] | None = None):
         self.config = Config()  # full config
         self._options = Options()
-        self.module_args = self._options.get_module_args()
-        self.args = None
+        # self.module_args = self._options.get_module_args()
+        self.args = self.parse_module_args()
         self.target = target
         self.port = port
         self.context = context or {}
@@ -132,5 +132,5 @@ class Base(ABC):
         return parser
 
     @abstractmethod
-    async def run(self, target: str | None, port: str | int | None, args):
+    async def run(self, target: str, port: int):
         pass

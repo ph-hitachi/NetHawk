@@ -34,7 +34,7 @@ class MongoDBManager:
                 host=f"{self.host}:{self.port}",
                 alias='default'
             )
-            self.logger.debug("MongoEngine connection established.")
+            self.logger.info("MongoEngine connection established.")
         except Exception as e:
             self.logger.error(f"Failed to connect to MongoDB via MongoEngine: {str(e)}")
 

@@ -169,9 +169,9 @@ class NmapHighlighter:
             self.render_banner_block(banner_block)
 
 # Example usage
-if __name__ == "__main__":
-    console = Console()
-    highlighter = NmapHighlighter(console)
+# if __name__ == "__main__":
+#     console = Console()
+#     highlighter = NmapHighlighter(console)
     
-    with open("results.nmap", "r", encoding="utf-8") as f:
-        highlighter.process_output(f)
+#     with open("results.nmap", "r", encoding="utf-8") as f:
+#         highlighter.process_output(f)

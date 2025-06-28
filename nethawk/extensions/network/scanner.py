@@ -406,8 +406,8 @@ class NetworkScanner:
     
     def get_vhost(self):
         data = self.get_results()
-        host = data['nmaprun']['host'] #.get('nmaprun', {}).get('host', {})
-        ports = host['ports']['port'] #.get('ports', {}).get('port', [])
+        host = data.get('nmaprun', {}).get('host', {})
+        ports = host.get('ports', {}).get('port', [])
 
         if isinstance(ports, dict):
             ports = [ports]

@@ -6,7 +6,8 @@ from rich.console import Console
 from rich.table import Table
 
 from nethawk.cli import banner
-from nethawk.core.models import TechnologyEntry
+from nethawk.core.context import Request
+from nethawk.core.models import TechnologyEntry, TargetInfo, HostInfo
 from nethawk.core.resolver import Resolver
 from nethawk.extensions.network.service_scanner import ServiceScanner
 from nethawk.extensions.detectors.tech import Detector
@@ -18,29 +19,20 @@ class TechProfiling(Module):
     authors = ['Ph.Hitachi']
     tags = ["http"]
 
-    async def run(self, target, port=None, args=[]):
-        # resolver = Resolver(target, port)
-        # s_scanner = ServiceScanner()
+    async def run(self, target, port):
+        request = Request.from_target(target, port)
         console = Console()
         detector = Detector()
 
+        if request.resolver.error:
+            return logging.error(request.resolver.error)
+        
         try:
-            result = self.get_service()
-            if not result:
-                return
-            
-            resolver, db, service = result
+            technologies = detector.get_technologies(request.resolver.resolved_url) or {}
 
-            if not (resolver and db and service):
-                return
+            target_info = request.database
 
-            resolver, db, service = self.get_service() # type: ignore
-
-            url = resolver.get_url()
-
-            technologies = detector.get_technologies(url) or {}
-
-            domain = db.get_vhost(resolver.get_hostname())
+            host_info = HostInfo.get_or_create(domain=request.resolver.hostname, target=target_info)
 
             for group, techs in technologies.items():
                 console.print(f"\n[{group}]")
@@ -63,20 +55,17 @@ class TechProfiling(Module):
 
                     table.add_row(f"    {tech['name']}", f"[{', '.join(details)}]")
 
+                    # Use get_or_create for TechnologyEntry
+                    TechnologyEntry.get_or_create(
+                        name=tech['name'],
+                        version=tech['version'],
+                        host=host_info
+                    )
+
+                host_info.save()
+
                 console.print(table)
-
-            if not hasattr(domain, 'technologies'):
-                logging.error(f'Unavailable to save technologies: {resolver.get_hostname()} are not added as virtual host.')
-                return
-            
-            for group in technologies.values():
-                for tech_data in group:
-                    name, version = tech_data['name'], tech_data['version']
-                    if not any(t.name == name and t.version == version for t in domain.technologies):  # type: ignore
-                        if db.hostname and resolver.get_hostname():
-                            domain.technologies.append(TechnologyEntry(**tech_data))
-
-            db.commit()
+                
 
         except Exception as e:
             logging.error(f"Unexpected Error: {e}")

@@ -15,6 +15,7 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from nethawk.core.models import FormFieldEntry, ServiceLinks
 from nethawk.core.resolver import Resolver
 from nethawk.extensions.network.service_scanner import ServiceScanner
+from nethawk.modules.protocols.http import spider
 
 console = Console()
 
@@ -240,57 +241,9 @@ class WebSpider(scrapy.Spider):
         # with open('results.json', 'w') as f:
         #     json.dump(self.results, f, indent=4)
 
-        # Resolve target and find service
-        resolver = Resolver(self.target)
-
-        db, service = self.scanner.scan(
-            target=resolver.get_ip(), 
-            port=str(resolver.get_port())
-        )
-
-        # print summary to terminal
-        self.print_summary()
-
-        # print(db, service, not (db and service))
-        if not (db and service):
-            logging.warning("Database or service resolution failed.")
-            return
-        
-        domain = db.get_vhost(resolver.get_hostname())
-
         try:
-            data = ServiceLinks(
-                urls=self.results.get("links", []),
-                emails=self.results.get("emails", []),
-                images=self.results.get("images", []),
-                videos=self.results.get("videos", []),
-                audio=self.results.get("audio", []),
-                comments=self.results.get("comments", []),
-                pages=self.results.get("pages", []),
-                parameters=self.results.get("pages_with_parameters", []),
-                subdomain_links=self.results.get("subdomain_links", []),
-                static_files=self.results.get("static_files", []),
-                javascript_files=self.results.get("js_files", []),
-                external_files=self.results.get("external_files", []),
-                other_links=self.results.get("other_links", []),
-                form_fields=[
-                    FormFieldEntry(
-                        action=form.get("action"),
-                        can_found_at=form.get("can_found_at", []),
-                        method=form.get("method", "GET"),
-                        fields=form.get("fields", [])
-                    ) for form in self.results.get("form_fields", [])
-                ]
-            )
-
-            if domain.links:
-                domain.links = domain.links.update(data)
-            else:
-                domain.links = data
-
-            # Save to DB
-            db.commit()
-
+            self.print_summary()
+            spider.Spider.save(self.target, self.results, reason)
         except Exception as e:
             raise e
         

@@ -4,7 +4,8 @@ import logging
 from textwrap import indent
 from typing import Any
 from nethawk.cli import banner
-from nethawk.core.models import PathEntry, ServiceLinks
+from nethawk.core.context import Request
+from nethawk.core.models import HostInfo, PathEntry, ServiceLinks
 from nethawk.core.resolver import Resolver
 from nethawk.extensions.network.service_scanner import ServiceScanner
 from nethawk.extensions.fuzzer import Fuzzer
@@ -29,62 +30,49 @@ class ContentDiscovery(Module):
         parser.add_argument('--match-code', type=lambda s: list(map(int, s.split(','))), default=config.get('match_code'), help='Comma-separated list of HTTP status codes to consider as valid matches')
         return parser
 
-    async def run(self, target, port, args): 
-        resolver = Resolver(target, port)
+    async def run(self, target, port):
+        request = Request.from_target(target, port)
 
+        if request.resolver.error:
+            return logging.error(request.resolver.error)
+        
         try:
-            # check if port are open
-            if resolver.get_error():
-                return
-            
-            db, service = self.scanner.scan(
-                target=resolver.get_ip(), 
-                port=str(resolver.get_port())
-            )
+            resolver = request.resolver
+            db_info = request.database
 
-            if not (db or service):
-                return
-
-            fuzz = Fuzzer(mode='dir', config=vars(args))
+            fuzz = Fuzzer(mode='dir', config=vars(self.args))
             
-            logging.info(f"URL: {resolver.get_url()}")
-            logging.info(f"THREADS: {args.threads}")
-            logging.info(f"RECURSION: {args.recursion}")
-            logging.info(f"STATUS: {','.join(str(code) for code in args.match_code)}")
-            logging.info(f"EXTENSIONS: [bold green]{','.join(str(extensions) for extensions in args.extensions)}[/]")
-            logging.info(f"WORDLIST: {args.wordlist}")
+            logging.info(f"URL: {resolver.resolved_url}")
+            logging.info(f"THREADS: {self.args.threads}")
+            logging.info(f"RECURSION: {self.args.recursion}")
+            logging.info(f"STATUS: {','.join(str(code) for code in self.args.match_code)}")
+            logging.info(f"EXTENSIONS: [bold green]{', '.join(str(extensions) for extensions in self.args.extensions)}[/]")
+            logging.info(f"WORDLIST: {self.args.wordlist}")
             print()
 
-            await fuzz.start(url=resolver.get_url())
+            await fuzz.start(url=resolver.resolved_url)
             
-            # Create a list of PathEntry objects from the fuzzing results
-            directory_entries = []
+            host_info = HostInfo.get_or_create(
+                domain=resolver.hostname,
+                target=db_info,
+                port=port
+            )
+
+            service_links = ServiceLinks.get_or_create(
+                host=host_info
+            )
 
             for result in fuzz.valid_results:
                 path, status, size, words, line = result
 
-                entry = PathEntry(
-                    path=path,       # The discovered path, e.g., "/admin/index.php"
-                    status=status,   # HTTP status code, e.g., 200
-                    size=size,       # Size of the response in bytes
-                    words=words,     # Word count in the response body
-                    line=line        # Line count in the response body
+                PathEntry.get_or_create(
+                    path=path,
+                    status=status,
+                    size=size,
+                    words=words,
+                    line=line,
+                    service_links=service_links
                 )
-
-                directory_entries.append(entry)
-
-            data = ServiceLinks(
-                directories=directory_entries
-            )
-            
-            domain = db.get_vhost(resolver.get_hostname())
-
-            if domain.links:
-                domain.links = domain.links.update(data)
-            else:
-                domain.links = data
-            
-            db.commit()
 
         except Exception as e:
             logging.error(f"Unexpected Error: {e}")

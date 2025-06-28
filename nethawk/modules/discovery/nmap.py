@@ -51,7 +51,10 @@ class PortScanner(Module):
                 f"[bold orange_red1]{service}[/]",
                 f"[bold yellow]{reason}[/] [bold blue1]{ttl}[/]"
             )
-
+        
+        if not ports:
+            return logging.error('No ports found, Please try again.')
+        
         # If get_ports() returns a dict (multiple hosts), flatten it
         if isinstance(ports, dict):
             for ip, port_list in ports.items():
@@ -113,58 +116,31 @@ class PortScanner(Module):
         return n_scanner
 
     async def run(self, target, port, args):
-        # ports = port  # fallback to a sensible default if none provided
 
-        # if target:
-        # print(resolve_host(target, port))
-        resolver = Resolver(target, port)
+        resolver = resolve_host(target, port)
 
-        if resolver.get_error():
-            return
+        if resolver.error and 'TCP connection' not in resolver.error:
+            return logging.error(resolver.error)
         
         if args.profile:
-            nmap_results = self.profile_scans(target=resolver.get_ip(), ports=port, type=args.profile)
+            nmap_results = self.profile_scans(target=resolver.ip, ports=port, type=args.profile)
         else:
-            nmap_results = self.nse_scans(target=resolver.get_ip(), ports=port)
-
-        # print(resolver.get_hostname())
-        # print(nmap_results.get_host_info())
-        # print(nmap_results.get_vhost())
-        # print(nmap_results.get_results())
-        # print(nmap_results.get_service_info())
-        # print(nmap_results.get_scripts())
+            nmap_results = self.nse_scans(target=resolver.ip, ports=port)
 
         vhost = nmap_results.get_vhost()
+
         # Clear previous data
-        TargetInfo.objects(ip_address=resolver.get_ip()).delete() # type: ignore[attr-defined]
+        TargetInfo.objects(ip_address=resolver.ip).delete() # type: ignore[attr-defined]
         
-        try:
-            db = TargetInfo.objects.get(ip_address=resolver.get_ip()) # type: ignore[attr-defined]
+        target_info = TargetInfo.get_or_create(
+            ip_address=resolver.ip,
+            hostname=vhost if vhost else resolver.hostname,
+            operating_system=resolver.os_guess_from_ttl
+        )
 
-        except DoesNotExist:
-            hostname = resolver.get_hostname()
-
-            if not hostname:
-                hostname = vhost
-            
-            db = TargetInfo(
-                ip_address=resolver.get_ip(), 
-                hostname=hostname, 
-                operating_system=resolver.get_os_guess_from_ttl(), 
-                services=[]
-            )
-
-        except Exception as e:
-            logging.error(f"There's an error while retreiving object data on TargetInfo: {e}")
-        
         if vhost:
-            add_dns_host(ip=resolver.get_ip(), hostname=vhost)
-            
-        # Create a list of ServiceInfo and saved
-        services = []
+            add_dns_host(ip=resolver.ip, hostname=vhost)
 
         for service in nmap_results.get_services():
-            services.append(ServiceInfo(**service))
-        
-        db.services = services # type: ignore[attr-defined]
-        # db.commit() # type: ignore
+            ServiceInfo.get_or_create(**service, target=target_info)
+

@@ -1,13 +1,16 @@
 # nethawk/_internal/dispatcher/strategy/service_discovery.py
+from ipaddress import ip_address
 import logging
 
 from mongoengine import DoesNotExist
 
 # from nethawk.extensions.dispatcher.engine import Dispatcher
 
+from nethawk.core.context import Request
 from nethawk.core.resolver import Resolver
 from nethawk.core.exception import ServiceNotFound
-from nethawk.core.models import TargetInfo
+from nethawk.core.models import ServiceInfo, TargetInfo
+from nethawk.extensions.resolver.resolver import resolve_host
 from nethawk.helper.db import get_database_info_by_ip
 # from nethawk.services.handler.protocols import ServiceHandler
 from nethawk.extensions.dispatcher import DispatchHandler
@@ -15,46 +18,40 @@ from nethawk.core.registry import module_registry
 from nethawk.core.registry import service_registry
 
 class ServiceDiscovery(DispatchHandler):
-    def __init__(self,  **kwargs):
-        self.services = []
-        super().__init__(**kwargs)
     
     def _load_service_handler(self):
         service_handlers = []
-        resolved_target = Resolver(self.target, self.port)
+        resolver = resolve_host(self.target, self.port)
 
-        if resolved_target.get_error():
-            return
+        if resolver.error and 'TCP connection' not in resolver.error:
+            return logging.error(resolver.error)
 
-        try:
-            db_info = get_database_info_by_ip(ip=resolved_target.get_ip())
+        db_info = TargetInfo.get_or_create(
+            ip_address=resolver.ip,
+            hostname=resolver.hostname,
+            operating_system=resolver.os_guess_from_ttl
+        )
 
-            for service_data in db_info.services:
-                service_port = service_data['port']
-                try:
-                    handler = service_registry.get_service(service_data['name'])
-                    
-                    # if issubclass(handler, ServiceHandler): # type: ignore
-                    # Append both handler and port as a tuple
-                    logging.debug(f'Service Handler Found: {handler}')
-                    service_handlers.append((handler, service_port))
+        for service_data in ServiceInfo.objects(target=db_info): # type: ignore
+            try:
+                handler = service_registry.get_service(service_data.name)
 
-                except ServiceNotFound as e:
-                    logging.warning(f'No service handler found for {service_data['name']} on port {service_port}. Skipping scans...') # type: ignore
-            
-            # set handler based on found services
-            self.services = service_handlers
+                # Append both handler and port as a tuple
+                service_handlers.append((handler, service_data.port))
+                logging.debug(f'Service Handler Found: {handler}')
 
-        except DoesNotExist:
-            logging.error(f"No Services Data found on database.")
+            except ServiceNotFound as e:
+                logging.warning(f"No service handler found for '{service_data.name}' on port {service_data.port}. Skipping scans...")
 
-        return self.services
+        return service_handlers
     
     async def _execute_services(self):
         """Dispatch all handler based on found services"""
         
-        if self._load_service_handler():
-            for _service_handler, service_port in self.services:
+        services = self._load_service_handler()
+
+        if services:
+            for _service_handler, service_port in services:
                 logging.debug(f'Running {_service_handler.__name__}({_service_handler.__bases__[0].__name__ or ''}): target={self.target}, ports={service_port}')
                 await _service_handler(target=self.target, port=service_port).run_listeners() # type:ignore
 
@@ -66,8 +63,11 @@ class ServiceDiscovery(DispatchHandler):
 
     async def run(self):
         logging.debug(f'Running ServiceDiscovery(DispatchHandler): target={self.target}, ports={self.port}')
-        resolved_target = Resolver(self.target, self.port)
+        resolver = resolve_host(self.target, self.port)
 
-        if not resolved_target.get_error():
-            await self._execute_nmap()
-            await self._execute_services() 
+        if resolver.error and 'TCP connection' not in resolver.error:
+            return logging.error(resolver.error)
+
+        await self._execute_nmap()
+        logging.info(f'Dispatching all modules based on discovered services/ports.') 
+        await self._execute_services() 

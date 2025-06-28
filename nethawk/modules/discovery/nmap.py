@@ -167,4 +167,4 @@ class PortScanner(Module):
             services.append(ServiceInfo(**service))
         
         db.services = services # type: ignore[attr-defined]
-        db.commit() # type: ignore
+        # db.commit() # type: ignore
